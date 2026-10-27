@@ -4371,6 +4371,6 @@ window.addEventListener('error', ev => { document.body.insertAdjacentHTML('after
 render();
 IDB.all().then(rows => { (rows || []).forEach(r => { FILE_URL[r.id] = URL.createObjectURL(r.blob); if (/^video\//.test(r.blob.type || '')) FILE_VID[r.id] = true; }); if ((rows || []).length && S.role) render(); }).catch(() => {});
 </script>
-<a href="../ops.html" style="position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:9999;background:#1a2130;color:#fff;padding:9px 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.2)">← 신청·과업 화면</a>
+<a href="../ops.html#board" style="position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:9999;background:#1a2130;color:#fff;padding:9px 14px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;box-shadow:0 6px 20px rgba(0,0,0,.2)">← 신청·과업 화면</a>
 </body>
 </html>

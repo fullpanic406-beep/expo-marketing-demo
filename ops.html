@@ -137,6 +137,10 @@
 </header>
 <div id="app"></div>
 
+<script>
+// 운영사 링크는 바로 실행 화면(작업 대시보드)으로 연다. 신청·과업 현황은 ops.html#board
+if (location.hash !== '#board') location.replace('dash/index.html#press');
+</script>
 <script src="core/config.js"></script>
 <script src="core/util.js"></script>
 <script src="modules/press.js"></script>

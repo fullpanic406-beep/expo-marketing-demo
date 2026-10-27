@@ -476,7 +476,7 @@ function renderSolution() {
     const run = F.done.consult === 'run';
     b.innerHTML = `<div class="card done"><p class="muted">${run ? '실행 상담' : '플랜 고도화 상담'} 신청이 접수되었습니다</p><div class="rc num">${F.done.id}</div>
       <p class="muted">담당 PM이 1영업일 안에 연락드립니다. ${run ? '보신 구성을 바탕으로 일정과 견적을 확정합니다.' : '보신 초안을 바탕으로 메시지와 매체 구성을 함께 다듬습니다.'}</p>
-      <p style="margin-top:20px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap"><a class="btn primary" href="ops.html">운영사 화면에서 확인 (데모)</a><button class="btn" type="button" id="againBtn">처음으로</button></p></div>`;
+      <p style="margin-top:20px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap"><a class="btn primary" href="ops.html#board">운영사 화면에서 확인 (데모)</a><button class="btn" type="button" id="againBtn">처음으로</button></p></div>`;
     return;
   }
   const a = F.app, s = F.sol, m = s.message;
