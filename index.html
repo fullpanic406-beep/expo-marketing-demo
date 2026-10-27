@@ -1,0 +1,736 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<title>전시 마케팅 비서</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="core/style.css">
+<style>
+  /* 화면 3장: ① 네이비 첫 화면(전체) → ② 홍보 선택 → ③ 정보 입력 → 접수 완료 */
+  :root { --navy: #0f1730; --navy-2: #1b2650; --navy-ink: #eef1fa; --navy-muted: #a9b2cd; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --navy: #0b1124; --navy-2: #17203f; } }
+  :root[data-theme="dark"] { --navy: #0b1124; --navy-2: #17203f; }
+  html, body { height: 100%; }
+  .screen { min-height: 100%; }
+  .screen[hidden] { display: none !important; }
+  @media (prefers-reduced-motion: no-preference) {
+    .screen { animation: dissolve .45s ease; }
+    @keyframes dissolve { from { opacity: 0; } to { opacity: 1; } }
+  }
+
+  /* ① 첫 화면 */
+  #intro { position: relative; display: flex; flex-direction: column; color: var(--navy-ink); background: var(--navy); overflow: hidden; }
+  #intro .bg { position: absolute; inset: 0; background: url(img/hero.jpg) center / cover no-repeat; opacity: .5; filter: grayscale(.3) brightness(.5); }
+  #intro .shade { position: absolute; inset: 0; background: linear-gradient(100deg, rgba(15,23,48,.97) 28%, rgba(15,23,48,.78) 62%, rgba(15,23,48,.55)); }
+  #intro > .wrap { position: relative; width: 100%; }
+  .bar { display: flex; align-items: center; gap: 18px; padding-block: 18px; }
+  .bar .sp { flex: 1; }
+  .bar a, .bar button.lnk { color: var(--navy-muted); text-decoration: none; font-size: 14px; background: none; border: 0; padding: 0; }
+  .bar a:hover, .bar button.lnk:hover { color: var(--navy-ink); }
+  .intro-main { flex: 1; display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: 40px; align-items: center; padding-block: 24px 40px; }
+  .eyebrow { display: inline-block; font-size: 12px; font-weight: 700; letter-spacing: .04em; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,.12); }
+  #intro h1 { font-size: clamp(32px, 5vw, 54px); line-height: 1.22; margin: 18px 0 16px; }
+  #intro p.lead { color: var(--navy-muted); font-size: 17px; margin: 0; max-width: 32em; }
+  .cta { display: flex; gap: 10px; margin-top: 32px; flex-wrap: wrap; }
+  .bh { padding: 15px 26px; border-radius: 12px; font-weight: 700; font-size: 16px; border: 1px solid transparent; }
+  .bh.main { background: var(--navy-ink); color: #0f1730; }
+  .bh.sub { background: rgba(255,255,255,.06); color: var(--navy-ink); border-color: rgba(255,255,255,.3); }
+  .bh:hover { opacity: .92; }
+  .plan { background: rgba(255,255,255,.96); color: #1a2130; border-radius: 16px; padding: 20px 22px; box-shadow: 0 24px 60px rgba(0,0,0,.4); max-width: 360px; justify-self: end; width: 100%; }
+  .plan .k { font-size: 12px; color: #677085; }
+  .plan h4 { margin: 2px 0 12px; font-size: 16px; }
+  .plan .tl { display: flex; flex-direction: column; gap: 9px; font-size: 13px; }
+  .plan .tl div { display: flex; align-items: center; gap: 8px; }
+  .plan .tl .d { width: 36px; color: #677085; }
+  .plan .ex { margin-top: 12px; font-size: 11px; color: #8a91a3; }
+  .plan .m-press { --m: #2f6bdc; } .plan .m-content { --m: #10a079; } .plan .m-influencer { --m: #e2603f; }
+  .howto { position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; border-top: 1px solid rgba(255,255,255,.14); }
+  .howto div { padding: 18px 18px 22px 0; display: flex; gap: 12px; align-items: baseline; color: var(--navy-muted); font-size: 14px; }
+  .howto b { color: var(--navy-ink); font-size: 13px; }
+
+  /* ②③ 공통 머리 */
+  .head { background: var(--surface); border-bottom: 1px solid var(--line); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; }
+  .head .wrap { display: flex; align-items: center; gap: 14px; padding-block: 12px; }
+  .head .sp { flex: 1; }
+  .prog { display: flex; gap: 6px; align-items: center; font-size: 13px; color: var(--muted); }
+  .prog i { width: 28px; height: 4px; border-radius: 99px; background: var(--line); display: inline-block; }
+  .prog i.on { background: var(--primary); }
+  .body { max-width: 1080px; margin: 0 auto; padding-block: 36px 120px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 28px; }
+  .ttl h2 { font-size: clamp(24px, 3vw, 32px); }
+  .ttl p { margin: 8px 0 0; color: var(--muted); }
+  .sub-h { font-size: 14px; font-weight: 700; color: var(--muted); margin: 0 0 12px; }
+
+  /* ② 상황 */
+  .sits { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .sit { position: relative; text-align: left; border: 0; padding: 0; border-radius: 14px; overflow: hidden; min-height: 150px; color: #fff; display: flex; align-items: flex-end; background: #1a2130; }
+  .sit img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .4s ease; }
+  .sit::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,14,25,.05) 20%, rgba(10,14,25,.82)); }
+  .sit:hover img { transform: scale(1.04); }
+  .sit .t { position: relative; z-index: 1; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+  .sit b { font-size: 16px; }
+  .sit .mix { display: flex; gap: 4px; flex-wrap: wrap; }
+  .sit .mix span { font-size: 11px; font-weight: 700; background: rgba(255,255,255,.18); padding: 2px 8px; border-radius: 999px; }
+  .sit.on { box-shadow: 0 0 0 3px var(--primary); }
+
+  /* ② 서비스 카드 */
+  .svcs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .svc { text-align: left; border: 2px solid var(--line); background: var(--surface); border-radius: 16px; overflow: hidden; padding: 0; display: flex; flex-direction: column; }
+  .svc .ph { position: relative; aspect-ratio: 16 / 10; max-width: 100%; background: var(--sunk); }
+  .svc .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .svc .ck { position: absolute; top: 12px; right: 12px; width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.9); border: 2px solid rgba(0,0,0,.08); display: grid; place-items: center; font-weight: 700; color: transparent; }
+  .svc .tx { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .svc h3 { font-size: 19px; color: var(--m); display: flex; align-items: center; gap: 8px; }
+  .svc p { margin: 0; font-size: 14px; }
+  .svc ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--muted); }
+  .svc li::before { content: "· "; }
+  .svc.on { border-color: var(--m); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+  .svc.on .ck { background: var(--m); border-color: var(--m); color: #fff; }
+
+  /* 하단 고정 버튼 */
+  .foot { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); z-index: 6; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .foot .wrap { display: flex; align-items: center; gap: 12px; padding-block: 12px; }
+  .foot .sp { flex: 1; }
+  .foot .picked { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--muted); }
+  .next { padding: 13px 28px; border-radius: 10px; border: 0; background: var(--primary); color: var(--on-primary); font-weight: 700; font-size: 15px; }
+  .next:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ③ 입력 */
+  .form-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; }
+  .form { padding: 26px; display: flex; flex-direction: column; gap: 16px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .f { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .f label { font-size: 13px; font-weight: 600; }
+  .f label em { color: var(--warn); font-style: normal; margin-left: 2px; }
+  .f label small { color: var(--muted); font-weight: 400; }
+  .f input, .f select, .f textarea { padding: 11px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); width: 100%; }
+  .f textarea { min-height: 90px; resize: vertical; }
+  .dates { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+  .ups { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .up { border: 1.5px dashed var(--line); border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 4px; align-items: flex-start; background: var(--surface); transition: border-color .15s, background .15s; }
+  .up b { font-size: 14px; }
+  .up span { font-size: 12px; color: var(--muted); }
+  .up .btn { margin-top: 6px; }
+  .up.drag { border-color: var(--primary); background: var(--sunk); }
+  .flist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .flist li { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: 13px; }
+  .flist .k { font-size: 11px; font-weight: 700; color: var(--muted); background: var(--sunk); padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+  .flist .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flist .s { color: var(--muted); white-space: nowrap; }
+  .flist button { border: 0; background: none; color: var(--muted); font-size: 15px; padding: 0 4px; }
+  .agree { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+  .err { color: var(--warn); font-size: 13px; margin: 0; min-height: 1em; }
+  .side { position: sticky; top: 80px; display: flex; flex-direction: column; gap: 10px; }
+  .pick { border-radius: 12px; overflow: hidden; display: grid; grid-template-columns: 76px minmax(0, 1fr); background: var(--surface); border: 1px solid var(--line); }
+  .pick img { width: 76px; height: 100%; object-fit: cover; }
+  .pick div { padding: 10px 12px; font-size: 13px; }
+  .pick b { color: var(--m); display: block; }
+  .side .chg { align-self: flex-start; }
+  .demo-fill { align-self: flex-end; font-size: 12px; }
+
+  .budget { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .budget select { flex: 1; min-width: 180px; }
+  .budget .bc { display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap; }
+  .budget .bc[hidden] { display: none; }
+  .budget .bc input { width: 130px; }
+
+  /* 로딩 */
+  #loading { position: relative; min-height: 100vh; display: grid; place-items: center; background: var(--navy); color: var(--navy-ink); overflow: hidden; padding: 24px 16px; }
+  #loading .bg { position: absolute; inset: 0; background: url(img/hero.jpg) center / cover no-repeat; opacity: .35; filter: grayscale(.4) brightness(.45) blur(2px); }
+  #loading .shade { position: absolute; inset: 0; background: radial-gradient(circle at 50% 40%, rgba(15,23,48,.55), rgba(15,23,48,.97) 70%); }
+  .ld { position: relative; width: min(520px, 100%); word-break: keep-all; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; }
+  .ld h2 { font-size: clamp(20px, 3vw, 26px); margin: 18px 0 0; }
+  .ld > p { margin: 0 0 14px; color: var(--navy-muted); font-size: 14px; }
+  .ld-orb { position: relative; width: 84px; height: 84px; }
+  .ld-orb i { position: absolute; inset: 0; border-radius: 50%; border: 2px solid transparent; }
+  .ld-orb i:nth-child(1) { border-top-color: #6f9bf0; animation: ldspin 1.4s linear infinite; }
+  .ld-orb i:nth-child(2) { inset: 12px; border-top-color: #3cc79f; animation: ldspin 1.1s linear infinite reverse; }
+  .ld-orb i:nth-child(3) { inset: 24px; border-top-color: #f08a6c; animation: ldspin .8s linear infinite; }
+  @keyframes ldspin { to { transform: rotate(360deg); } }
+  .ld-steps { list-style: none; margin: 0; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 4px; text-align: left; }
+  .ld-steps li { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-radius: 10px; font-size: 14px; color: rgba(238,241,250,.38); transition: color .3s, background .3s; }
+  .ld-steps li::before { content: ""; width: 18px; height: 18px; flex: none; border-radius: 50%; border: 1.5px solid currentColor; display: grid; place-items: center; font-size: 11px; font-weight: 700; }
+  .ld-steps li.now { color: var(--navy-ink); background: rgba(255,255,255,.08); }
+  .ld-steps li.now::before { border-color: rgba(255,255,255,.25); border-top-color: var(--navy-ink); animation: ldspin .8s linear infinite; }
+  .ld-steps li.ok { color: var(--navy-muted); }
+  .ld-steps li.ok::before { content: "✓"; background: #3cc79f; border-color: #3cc79f; color: #0f1730; }
+  .ld-bar { width: 100%; height: 4px; border-radius: 99px; background: rgba(255,255,255,.12); overflow: hidden; margin-top: 12px; }
+  .ld-bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #6f9bf0, #3cc79f, #f08a6c); transition: width .8s ease; }
+  @media (prefers-reduced-motion: reduce) { .ld-orb i, .ld-steps li.now::before { animation: none; } .ld-bar i { transition: none; } }
+
+  /* ④ AI 솔루션 */
+  .aitag { display: inline-block; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--common); color: #fff; margin-bottom: 10px; }
+  .sol-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: start; }
+  .sol { padding: 22px; display: flex; flex-direction: column; gap: 12px; }
+  .sol .sub-h { margin: 0; }
+  .sm { font-size: 12px; }
+  .slogan { font-size: 22px; font-weight: 700; line-height: 1.35; }
+  .tgt { display: flex; gap: 10px; font-size: 14px; align-items: baseline; }
+  .tgt span { font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .pts { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+  .cks { margin: 0; padding-left: 16px; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+  .pts mark { background: var(--sunk); color: var(--muted); padding: 0 4px; border-radius: 4px; }
+  .mixbar { display: flex; height: 14px; border-radius: 99px; overflow: hidden; background: var(--sunk); }
+  .mixbar i { background: var(--m); }
+  .sol-hero { position: relative; border-radius: 16px; overflow: hidden; min-height: 220px; display: flex; align-items: flex-end; background: var(--navy); color: #fff; }
+  .sol-hero > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .sol-hero::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,48,.15) 0%, rgba(15,23,48,.88) 78%); }
+  .sol-hero .in { position: relative; z-index: 1; padding: 28px; display: flex; flex-direction: column; gap: 6px; }
+  .sol-hero h2 { margin: 0; font-size: clamp(22px, 3.2vw, 30px); word-break: keep-all; }
+  .sol-hero p { margin: 0; font-size: 14px; color: rgba(255,255,255,.82); word-break: keep-all; }
+  .sol-hero .aitag { align-self: flex-start; margin-bottom: 4px; }
+  .hchips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+  .hchips .tag { background: rgba(255,255,255,.14); color: #fff; backdrop-filter: blur(4px); }
+  .poster { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 10; background: var(--navy); }
+  .poster img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .poster::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(15,23,48,0) 25%, rgba(15,23,48,.9) 100%); }
+  .poster .cap { position: absolute; left: 0; right: 0; bottom: 0; z-index: 1; padding: 18px 20px; color: #fff; display: flex; flex-direction: column; gap: 6px; }
+  .poster .cap span { font-size: 11px; font-weight: 700; letter-spacing: .08em; opacity: .75; }
+  .poster .cap b { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.3; word-break: keep-all; }
+  .poster .cap em { font-style: normal; font-size: 12px; opacity: .7; }
+  .mixc { display: flex; flex-direction: column; }
+  .mi { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+  .mi > img, .mi > .ic { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; box-shadow: inset 0 0 0 2px var(--m); }
+  .mi > img { border: 2px solid var(--m); }
+  .mi > .ic { display: grid; place-items: center; background: var(--sunk); color: var(--m); box-shadow: none; }
+  .mi .t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .mi .t b { font-size: 14px; display: flex; align-items: center; gap: 6px; }
+  .mi .t b .dot { background: var(--m); }
+  .mi .sh { display: block; height: 5px; border-radius: 99px; background: var(--sunk); margin-top: 4px; overflow: hidden; }
+  .mi .sh i { display: block; height: 100%; background: var(--m); }
+  .mi .v { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; white-space: nowrap; }
+  .mtot { display: flex; justify-content: space-between; padding-top: 10px; border-top: 2px solid var(--ink); font-weight: 700; }
+  @media (max-width: 600px) { .sol-hero { min-height: 260px; } .sol-hero .in { padding: 20px; } .mi { grid-template-columns: 52px minmax(0, 1fr) auto; } .mi > img, .mi > .ic { width: 52px; height: 52px; } }
+  .mixt { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .mixt td { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  .mixt td .tag { margin-bottom: 4px; }
+  .mixt .r { text-align: right; padding-left: 12px; white-space: nowrap; }
+  .mixt tr.sum td { font-weight: 700; border-top: 2px solid var(--ink); }
+  .bst { margin: 0; font-size: 13px; padding: 10px 12px; border-radius: 8px; background: var(--sunk); }
+  .bst.warn { color: var(--warn); }
+  .phs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .phs .ph > b { display: block; font-size: 13px; margin-bottom: 8px; }
+  .phs .row { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 3px 0; }
+  .phs .row .d { width: 36px; color: var(--muted); }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .choice { text-align: left; padding: 18px 20px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); display: flex; flex-direction: column; gap: 4px; }
+  .choice b { font-size: 16px; }
+  .choice span { font-size: 13px; color: var(--muted); }
+  .choice[data-consult="run"] { background: var(--primary); border-color: var(--primary); }
+  .choice[data-consult="run"] b, .choice[data-consult="run"] span { color: var(--on-primary); }
+  .choice:hover { opacity: .92; }
+  .choice:disabled { opacity: .5; cursor: wait; }
+
+  /* 완료 */
+  .done { max-width: 620px; margin: 40px auto; text-align: center; padding: 44px 28px; }
+  .done .rc { font-size: 26px; font-weight: 700; margin: 10px 0; }
+
+  /* 모달 (제안서 예시 · 진행 과정) */
+  .modal { position: fixed; inset: 0; background: rgba(10,14,25,.6); display: grid; place-items: center; z-index: 30; padding: 16px; }
+  .sheet { background: var(--surface); color: var(--ink); border-radius: 16px; width: min(680px, 100%); max-height: 86vh; overflow: auto; padding: 26px; display: flex; flex-direction: column; gap: 16px; }
+  .sheet-h { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .sheet .row { display: flex; align-items: center; gap: 10px; font-size: 14px; padding: 4px 0; }
+  .sheet .row .d { width: 44px; color: var(--muted); }
+  .ph-t { font-size: 12px; font-weight: 700; color: var(--muted); margin-top: 8px; }
+  .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .fl { padding: 14px; border-radius: 10px; background: var(--sunk); display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); }
+  .fl b { font-size: 14px; color: var(--ink); }
+  .fl.you { background: var(--surface); border: 1px solid var(--ink); }
+  .faq details { border-top: 1px solid var(--line); padding: 12px 0; }
+  .faq summary { cursor: pointer; font-weight: 600; }
+  .faq p { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+
+  @media (max-width: 900px) {
+    .intro-main { grid-template-columns: 1fr; }
+    .plan { justify-self: start; }
+    .sits, .svcs { grid-template-columns: 1fr; }
+    .sit { min-height: 120px; }
+    .form-grid, .sol-grid { grid-template-columns: 1fr; }
+    .side { position: static; order: -1; }
+  }
+  @media (max-width: 560px) {
+    .howto { grid-template-columns: 1fr; }
+    .howto div { padding: 8px 0; }
+    .grid2, .ups, .phs, .choices { grid-template-columns: 1fr; }
+    .form { padding: 20px 16px; }
+    .flow { grid-template-columns: 1fr 1fr; }
+    .foot .picked { display: none; }
+    .bar .hide-s { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ① 첫 화면 -->
+<section class="screen" id="intro">
+  <div class="bg" aria-hidden="true"></div><div class="shade" aria-hidden="true"></div>
+  <div class="wrap bar">
+    <div class="brand"><i></i>전시 마케팅 비서</div>
+    <div class="sp"></div>
+    <button class="lnk hide-s" type="button" data-info>진행 과정 · 자주 묻는 질문</button>
+    <a href="ops.html">운영사</a>
+  </div>
+  <div class="wrap intro-main">
+    <div>
+      <span class="eyebrow">전시 참가 기업을 위한 홍보</span>
+      <h1>부스를 차리는 것만큼<br>알리는 것도 중요합니다</h1>
+      <p class="lead">언론·콘텐츠·인플루언서 중 필요한 것만 고르세요. 전시 일정에 맞춘 홍보 플랜을 제안서로 보내 드리고, 확정되면 끝까지 운영합니다.</p>
+      <div class="cta">
+        <button class="bh main" type="button" data-go="select">홍보 신청 시작하기</button>
+        <button class="bh sub" type="button" data-sample>제안서 예시 보기</button>
+      </div>
+    </div>
+    <div class="plan" aria-hidden="true">
+      <div class="k">홍보 플랜 · 인터배터리 2027</div>
+      <h4>전시 4주 전부터 시작합니다</h4>
+      <div class="tl">
+        <div class="m-influencer"><span class="d num">2.10</span><span class="dot"></span>인플루언서 후보 제안</div>
+        <div class="m-content"><span class="d num">2.14</span><span class="dot"></span>콘텐츠 캘린더 확정</div>
+        <div class="m-press"><span class="d num">2.24</span><span class="dot"></span>참가 예고 보도자료 배포</div>
+        <div class="m-influencer"><span class="d num">3.10</span><span class="dot"></span>부스 방문 시작</div>
+        <div class="m-press"><span class="d num">3.15</span><span class="dot"></span>성과 보도자료 배포</div>
+      </div>
+      <div class="ex">제안서 일정 예시</div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="howto">
+      <div><b>1</b>필요한 홍보 고르기</div>
+      <div><b>2</b>회사·전시 정보 남기기</div>
+      <div><b>3</b>AI 솔루션 보고 상담 신청</div>
+    </div>
+  </div>
+</section>
+
+<!-- ② 홍보 선택 -->
+<section class="screen" id="select" hidden>
+  <div class="head"><div class="wrap">
+    <button class="btn ghost" type="button" data-go="intro">← 처음으로</button>
+    <div class="sp"></div>
+    <div class="prog"><i class="on"></i><i></i><i></i><span>1/3 홍보 고르기</span></div>
+  </div></div>
+  <div class="body">
+    <div class="ttl"><h2>어떤 홍보가 필요하세요?</h2><p>여러 개 고를 수 있습니다. 건수·범위는 상담하면서 함께 정합니다.</p></div>
+    <div><p class="sub-h">상황으로 고르기</p><div class="sits" id="sits"></div></div>
+    <div><p class="sub-h">직접 고르기</p><div class="svcs" id="svcs"></div></div>
+  </div>
+  <div class="foot"><div class="wrap">
+    <div class="picked" id="picked"></div>
+    <div class="sp"></div>
+    <button class="next" type="button" id="toForm" data-go="form">다음</button>
+  </div></div>
+</section>
+
+<!-- ③ 정보 입력 -->
+<section class="screen" id="form" hidden>
+  <div class="head"><div class="wrap">
+    <button class="btn ghost" type="button" data-go="select">← 이전</button>
+    <div class="sp"></div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i></i><span>2/3 정보 입력</span></div>
+  </div></div>
+  <div class="body" id="formBody"></div>
+</section>
+
+<!-- 로딩 (정보 입력 → AI 솔루션 사이) -->
+<section class="screen" id="loading" hidden>
+  <div class="bg" aria-hidden="true"></div><div class="shade" aria-hidden="true"></div>
+  <div class="ld" role="status" aria-live="polite">
+    <div class="ld-orb" aria-hidden="true"><i></i><i></i><i></i></div>
+    <h2 id="ldTitle">홍보 솔루션을 만들고 있습니다</h2>
+    <p>잠시만 기다려 주세요</p>
+    <ol class="ld-steps" id="ldSteps"></ol>
+    <div class="ld-bar"><i id="ldBar"></i></div>
+  </div>
+</section>
+
+<!-- ④ AI 솔루션 → 상담 신청 -->
+<section class="screen" id="solution" hidden>
+  <div class="head"><div class="wrap">
+    <button class="btn ghost" type="button" data-go="form" id="solBack">← 정보 고치기</button>
+    <div class="sp"></div>
+    <div class="prog"><i class="on"></i><i class="on"></i><i class="on"></i><span>3/3 AI 솔루션</span></div>
+  </div></div>
+  <div class="body" id="solBody"></div>
+</section>
+
+<div id="modalRoot"></div>
+
+<script src="core/config.js"></script>
+<script src="core/util.js"></script>
+<script src="modules/press.js"></script>
+<script src="modules/content.js"></script>
+<script src="modules/influencer.js"></script>
+<script src="core/plan.js"></script>
+<script src="core/solution.js"></script>
+<script src="core/sample.js"></script>
+<script src="core/api.js"></script>
+<script>
+const PHOTO = { press: 'img/press.jpg', content: 'img/content.jpg', influencer: 'img/influencer.jpg' };
+const SITUATIONS = [
+  { id: 'first', img: 'img/sit_first.jpg', title: '처음 참가라 아는 사람이 없어요', mix: ['press', 'content'] },
+  { id: 'visit', img: 'img/sit_visit.jpg', title: '부스에 사람을 더 모으고 싶어요', mix: ['influencer', 'content'] },
+  { id: 'result', img: 'img/sit_result.jpg', title: '전시 성과를 제대로 남기고 싶어요', mix: ['press', 'content', 'influencer'] },
+];
+// app = 입력값(화면을 오가도 유지), sol = AI 솔루션 초안, done = 접수 결과
+const F = { mix: [], situation: '', done: null, files: [], app: null, sol: null };
+// 첨부 자료 (서버 server/Code.gs와 같은 기준)
+const FILE_KINDS = { company: ['회사 소개서', '회사·제품 소개서, 브로슈어, 로고'], expo: ['행사 정보', '전시 안내문, 참가 확정서, 부스 도면'] };
+const FILE_MAX = 5, FILE_MB = 10, FILE_EXT = /\.(pdf|pptx?|docx?|hwpx?|xlsx?|jpe?g|png|zip)$/i;
+let pickKind = 'company';
+
+function go(id) {
+  if (document.getElementById('applyForm') && !document.getElementById('form').hidden) F.app = collect();
+  document.querySelectorAll('.screen').forEach(s => { s.hidden = s.id !== id; });
+  if (id === 'form') renderForm();
+  if (id === 'solution') renderSolution();
+  window.scrollTo(0, 0);
+}
+
+function tag(id) {
+  return `<span class="tag m-${id}"><span class="dot"></span>${moduleById(id).name}</span>`;
+}
+
+function renderSelect() {
+  document.getElementById('sits').innerHTML = SITUATIONS.map(s => `
+    <button type="button" class="sit ${F.situation === s.title ? 'on' : ''}" data-sit="${s.id}">
+      <img src="${s.img}" alt="">
+      <span class="t"><b>${s.title}</b><span class="mix">${s.mix.map(id => `<span>${moduleById(id).name}</span>`).join('')}</span></span>
+    </button>`).join('');
+  document.getElementById('svcs').innerHTML = MODULES.map(m => `
+    <button type="button" class="svc m-${m.id} ${F.mix.includes(m.id) ? 'on' : ''}" data-svc="${m.id}" aria-pressed="${F.mix.includes(m.id)}">
+      <span class="ph"><img src="${PHOTO[m.id]}" alt=""><span class="ck">✓</span></span>
+      <span class="tx"><h3><span class="dot"></span>${m.name}</h3><p>${m.intro}</p><ul>${(m.points || []).map(p => `<li>${p}</li>`).join('')}</ul></span>
+    </button>`).join('');
+  document.getElementById('picked').innerHTML = F.mix.length ? '선택 ' + MODULES.filter(m => F.mix.includes(m.id)).map(m => tag(m.id)).join('') : '하나 이상 골라 주세요';
+  document.getElementById('toForm').disabled = !F.mix.length;
+}
+
+function field(id, label, o) {
+  o = o || {};
+  return `<div class="f"><label for="${id}">${label}${o.req ? '<em>*</em>' : ''}${o.hint ? ` <small>${o.hint}</small>` : ''}</label><input id="${id}" type="${o.type || 'text'}"${o.ph ? ` placeholder="${o.ph}"` : ''}></div>`;
+}
+function select(id, label, list, req) {
+  return `<div class="f"><label for="${id}">${label}${req ? '<em>*</em>' : ''}</label><select id="${id}"><option value="">선택</option>${list.map(v => `<option>${v}</option>`).join('')}</select></div>`;
+}
+
+function renderForm() {
+  const b = document.getElementById('formBody');
+  const picks = MODULES.filter(m => F.mix.includes(m.id));
+  b.innerHTML = `
+    <div class="ttl"><h2>회사와 전시 정보를 알려 주세요</h2><p>담당 PM이 확인하고 연락드립니다.</p></div>
+    <div class="form-grid">
+      <form class="card form" id="applyForm" novalidate>
+        ${API.isDemo() ? '<button class="btn ghost demo-fill" type="button" id="fillBtn">예시 값 채우기 (데모)</button>' : ''}
+        <div class="grid2">${field('c_name', '회사명', { req: 1, ph: '회사명 입력' })}${select('c_ind', '업종', INDUSTRIES, 1)}</div>
+        <div class="grid2">${field('c_person', '담당자', { req: 1, ph: '이름' })}${field('c_phone', '휴대폰', { req: 1, ph: '숫자만 입력', type: 'tel' })}</div>
+        <div class="grid2">${field('c_email', '메일', { req: 1, ph: 'name@company.com', type: 'email' })}${field('c_site', '홈페이지', { ph: '선택' })}</div>
+        <div class="grid2">${field('x_name', '참가 전시', { req: 1, ph: '예: 인터배터리 2027' })}${field('x_booth', '부스 번호', { hint: '정해졌다면' })}</div>
+        <div class="f"><label for="x_start">전시 기간<em>*</em></label><div class="dates"><input id="x_start" type="date" aria-label="시작일"><span class="muted">~</span><input id="x_end" type="date" aria-label="종료일"></div></div>
+        <div class="f"><label for="budget">예상 예산<em>*</em> <small>부가세 별도 · 정해진 예산이 없으면 '배정 예산 없음'</small></label>
+          <div class="budget"><select id="budget"><option value="">선택</option>${BUDGET_OPTIONS.map(([v, n]) => `<option value="${v}">${n}</option>`).join('')}</select>
+          <span class="bc" id="budgetCustomWrap" hidden><input id="budgetCustom" type="number" inputmode="numeric" min="100" step="100" placeholder="예: 1200" aria-label="예산 직접 입력 (만 원)">만 원</span></div></div>
+        <div class="f"><label for="memo">문의 내용 <small>선택</small></label><textarea id="memo" placeholder="목표, 걱정되는 점, 원하는 매체나 채널 등을 자유롭게 적어 주세요."></textarea></div>
+        <div class="f"><label>자료 첨부 <small>선택 · 파일당 ${FILE_MB}MB, 최대 ${FILE_MAX}개 · PDF·PPT·워드·한글·엑셀·이미지</small></label>
+          <div class="ups">${Object.entries(FILE_KINDS).map(([k, [t, d]]) => `<div class="up" data-drop="${k}"><b>${t}</b><span>${d}</span><button class="btn" type="button" data-pick="${k}">파일 선택</button></div>`).join('')}</div>
+          <ul class="flist" id="flist"></ul>
+          <input type="file" id="fileIn" multiple hidden accept=".pdf,.ppt,.pptx,.doc,.docx,.hwp,.hwpx,.xls,.xlsx,.jpg,.jpeg,.png,.zip">
+        </div>
+        <label class="agree"><input type="checkbox" id="agree"> 상담을 위한 개인정보 수집·이용에 동의합니다. (필수)</label>
+        <p class="err" id="err"></p>
+        <button class="next" type="submit" id="submitBtn" style="width:100%">AI 솔루션 받기</button>
+        <p class="muted" style="margin:-6px 0 0; font-size:12px; text-align:center">핵심 메시지와 매체별 금액 초안을 바로 보여 드립니다. 상담 신청은 다음 화면에서 합니다.</p>
+      </form>
+      <aside class="side">
+        <p class="sub-h" style="margin:0">고른 홍보</p>
+        ${picks.map(m => `<div class="pick m-${m.id}"><img src="${PHOTO[m.id]}" alt=""><div><b>${m.name}</b>${m.intro}</div></div>`).join('')}
+        <button class="btn chg" type="button" data-go="select">바꾸기</button>
+      </aside>
+    </div>`;
+  if (F.app) fillForm(F.app);
+  renderFiles();
+}
+
+// 화면을 오갔을 때 입력값 되살리기
+function fillForm(a) {
+  const set = (id, v) => { const el = document.getElementById(id); if (el && v != null) el.value = v; };
+  const c = a.company || {}, x = a.expo || {};
+  set('c_name', c.name); set('c_ind', c.industry); set('c_person', c.person); set('c_phone', c.phone); set('c_email', c.email); set('c_site', c.site);
+  set('x_name', x.name); set('x_booth', x.booth); set('x_start', x.start); set('x_end', x.end);
+  set('budget', a.budgetKey); set('budgetCustom', a.budgetKey === 'custom' && a.budgetWon ? a.budgetWon / 10000 : '');
+  document.getElementById('budgetCustomWrap').hidden = a.budgetKey !== 'custom';
+  set('memo', a.memo); document.getElementById('agree').checked = !!a.agree;
+}
+
+/* ④ AI 솔루션 */
+const PLAN_ICON = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M8 14h3M8 17h6"/></svg>';
+function mixItem(mod, pic, name, summary, cost, share) {
+  return `<div class="mi m-${mod}">${pic}<div class="t"><b><span class="dot"></span>${name}</b><span class="sm muted">${U.esc(summary)}</span><span class="sh"><i style="width:${share * 100}%"></i></span></div>
+    <div class="v"><b class="num">${U.won(cost)}</b><span class="num muted sm">${Math.round(share * 100)}%</span></div></div>`;
+}
+
+function renderSolution() {
+  const b = document.getElementById('solBody');
+  document.getElementById('solBack').hidden = !!F.done;
+  if (F.done) {
+    const run = F.done.consult === 'run';
+    b.innerHTML = `<div class="card done"><p class="muted">${run ? '실행 상담' : '플랜 고도화 상담'} 신청이 접수되었습니다</p><div class="rc num">${F.done.id}</div>
+      <p class="muted">담당 PM이 1영업일 안에 연락드립니다. ${run ? '보신 구성을 바탕으로 일정과 견적을 확정합니다.' : '보신 초안을 바탕으로 메시지와 매체 구성을 함께 다듬습니다.'}</p>
+      <p style="margin-top:20px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap"><a class="btn primary" href="ops.html">운영사 화면에서 확인 (데모)</a><button class="btn" type="button" id="againBtn">처음으로</button></p></div>`;
+    return;
+  }
+  const a = F.app, s = F.sol, m = s.message;
+  // 사진: 위 배너 = 고른 상황, 키 메시지 = 금액이 가장 큰 홍보
+  const heroImg = (SITUATIONS.find(x => x.title === a.situation) || { img: 'img/hero.jpg' }).img;
+  const top = s.rows.slice().sort((x, y) => y.cost - x.cost)[0], posterImg = top ? PHOTO[top.module] : 'img/hero.jpg';
+  const groups = PHASES.map(([k, n]) => {
+    const rows = s.schedule.filter(r => phaseOf(r.date, a.expo) === k);
+    return rows.length ? `<div class="ph"><b>${n}</b><div>${rows.map(r => `<div class="row m-${r.module}"><span class="d num">${U.md(r.date)}</span><span class="dot"></span>${U.esc(r.title)}</div>`).join('')}</div></div>` : '';
+  }).join('');
+  const state = s.none ? `<p class="bst">배정 예산이 없어 기본 구성으로 계산했습니다. <b>권장 예산 ${U.won(s.total)}</b></p>`
+    : s.over ? `<p class="bst warn">고른 홍보를 모두 하려면 최소 <b>${U.won(s.total)}</b>이 필요해 예산보다 ${U.won(s.over)} 많습니다. 상담에서 범위를 줄이거나 나눠 진행하는 방법을 함께 정합니다.</p>`
+    : `<p class="bst">예산 ${U.won(s.budget)} 중 <b>${U.won(s.total)}</b> 사용${s.left ? ` · 남는 ${U.won(s.left)}은 광고 집행이나 추가 콘텐츠로 상담 때 제안합니다` : ''}</p>`;
+  b.innerHTML = `
+    ${F.aiError ? `<p class="bst warn">AI 연결에 실패해 예시 초안을 보여 드립니다 (${U.esc(F.aiError)}). 상담 때 PM이 맞춤안으로 다시 드립니다.</p>` : ''}
+    <div class="sol-hero"><img src="${heroImg}" alt=""><div class="in">
+      <span class="aitag">${s.engine === 'claude' ? 'AI 초안 · 첨부 자료 반영' : '예시 초안 · AI 연결 전'}</span>
+      <h2>${U.esc(a.company.name)} 홍보 솔루션 초안</h2>
+      <p>${U.esc(a.expo.name)} · ${U.md(a.expo.start)}~${U.md(a.expo.end)}${a.expo.booth ? ' · 부스 ' + U.esc(a.expo.booth) : ''} · ${s.none ? '배정 예산 없음' : '예산 ' + U.won(s.budget)}</p>
+      <div class="hchips">${s.rows.map(r => `<span class="tag m-${r.module}"><span class="dot"></span>${r.name}</span>`).join('')}</div>
+    </div></div>
+    <div class="sol-grid">
+      <div class="card sol"><p class="sub-h">키 커뮤니케이션 메시지</p>
+        <div class="poster"><img src="${posterImg}" alt=""><div class="cap"><span>키 메시지</span><b>${U.esc(m.slogan)}</b><em>${U.esc(a.company.name)} · ${U.esc(a.expo.name)}</em></div></div>
+        <div class="tgt"><span>누구에게</span>${U.esc(m.target)}</div>
+        <ol class="pts">${m.points.map(p => `<li>${U.esc(p).replace(/\[(.+?)\]/g, '<mark>$1</mark>')}</li>`).join('')}</ol>
+        ${s.checks.length ? `<div class="tgt"><span>상담 때 확인</span><ul class="cks">${s.checks.map(c => `<li>${U.esc(c)}</li>`).join('')}</ul></div>` : ''}
+        <p class="muted sm">${s.engine === 'claude' ? 'AI가 입력 정보와 첨부 자료로 쓴 초안입니다. 표시한 부분은 상담 때 확정합니다.' : '지금은 입력하신 정보로 만든 예시입니다. 표시한 부분은 상담 때 확정합니다.'}</p></div>
+      <div class="card sol"><p class="sub-h">매체별 홍보 금액 믹스</p>
+        <div class="mixbar">${s.rows.map(r => `<i class="m-${r.module}" style="width:${r.share * 100}%"></i>`).join('')}<i class="m-common" style="width:${s.fee / s.total * 100}%"></i></div>
+        <div class="mixc">
+          ${s.rows.map(r => mixItem(r.module, `<img src="${PHOTO[r.module]}" alt="">`, r.name, r.summary, r.cost, r.share)).join('')}
+          ${mixItem('common', `<span class="ic">${PLAN_ICON}</span>`, '홍보 플래닝', '일정·채널·예산 설계', s.fee, s.fee / s.total)}
+        </div>
+        <div class="mtot"><span>합계 <span class="sm muted">부가세 별도</span></span><span class="num">${U.won(s.total)}</span></div>
+        ${s.reason ? `<p class="sm" style="margin:0">${U.esc(s.reason)}</p>` : ''}
+        ${state}</div>
+    </div>
+    <div class="card sol"><p class="sub-h">일정 요약</p><div class="phs">${groups}</div></div>
+    <p class="muted sm" style="margin:0">금액은 단가 가안 기준이며 상담 후 확정합니다. 기사 게재와 조회수는 보장하지 않습니다.</p>
+    <div class="choices">
+      <button type="button" class="choice" data-consult="run"><b>이대로 실행 상담 신청</b><span>이 구성대로 일정·계약을 바로 상담합니다</span></button>
+      <button type="button" class="choice" data-consult="refine"><b>플랜 고도화 상담 신청</b><span>메시지와 매체 구성을 PM과 함께 다듬습니다</span></button>
+    </div>
+    <p class="err" id="solErr"></p>`;
+}
+
+function fileSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + 'MB' : Math.max(1, Math.round(n / 1024)) + 'KB'; }
+function renderFiles() {
+  const el = document.getElementById('flist');
+  if (el) el.innerHTML = F.files.map((f, i) => `<li><span class="k">${FILE_KINDS[f.kind][0]}</span><span class="n">${U.esc(f.file.name)}</span><span class="s">${fileSize(f.file.size)}</span><button type="button" data-unfile="${i}" aria-label="${U.esc(f.file.name)} 빼기">✕</button></li>`).join('');
+}
+function addFiles(kind, list) {
+  const bad = [];
+  Array.from(list).forEach(file => {
+    if (F.files.length >= FILE_MAX) bad.push(`${file.name}: 최대 ${FILE_MAX}개`);
+    else if (!FILE_EXT.test(file.name)) bad.push(`${file.name}: 올릴 수 없는 형식`);
+    else if (file.size > FILE_MB * 1048576) bad.push(`${file.name}: ${FILE_MB}MB 초과`);
+    else if (F.files.some(f => f.file.name === file.name && f.file.size === file.size)) bad.push(`${file.name}: 이미 올림`);
+    else F.files.push({ kind, file });
+  });
+  renderFiles();
+  document.getElementById('err').textContent = bad.length ? '첨부하지 못한 파일 · ' + bad.join(' / ') : '';
+}
+
+function val(id) { return (document.getElementById(id).value || '').trim(); }
+
+function collect() {
+  const bk = val('budget'), bc = Math.round(+val('budgetCustom') || 0);
+  const app = {
+    company: { name: val('c_name'), industry: val('c_ind'), person: val('c_person'), phone: val('c_phone'), email: val('c_email'), site: val('c_site') },
+    expo: { name: val('x_name'), booth: val('x_booth'), start: val('x_start'), end: val('x_end') },
+    // budget = 화면 표시용 글자, budgetWon = 원 단위(배정 예산 없음은 0)
+    budgetKey: bk, budgetWon: bk === 'custom' ? bc * 10000 : bk && bk !== 'none' ? +bk * 10000 : 0,
+    budget: bk === 'custom' ? (bc ? bc.toLocaleString('ko-KR') + '만 원' : '') : (BUDGET_OPTIONS.find(o => o[0] === bk) || ['', ''])[1],
+    memo: val('memo'), situation: F.situation, mix: {}, agree: document.getElementById('agree').checked,
+  };
+  MODULES.forEach(m => { if (F.mix.includes(m.id)) app.mix[m.id] = defaultOpt(m); });
+  return app;
+}
+
+function check(a) {
+  const c = a.company, x = a.expo;
+  if (!c.name || !c.industry || !c.person || !c.phone || !c.email) return '* 표시 항목을 모두 적어 주세요.';
+  if (!/^[0-9-]{9,13}$/.test(c.phone)) return '휴대폰 번호를 숫자로 적어 주세요.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(c.email)) return '메일 주소를 확인해 주세요.';
+  if (!x.name || !x.start || !x.end) return '참가 전시와 기간을 적어 주세요.';
+  if (x.end < x.start) return '종료일이 시작일보다 빠릅니다.';
+  if (!a.budgetKey) return "예상 예산을 골라 주세요. 정해진 예산이 없으면 '배정 예산 없음'을 고르세요.";
+  if (a.budgetKey === 'custom' && a.budgetWon < 1000000) return '직접 입력한 예산을 만 원 단위로 적어 주세요 (100만 원 이상).';
+  if (!a.agree) return '개인정보 수집·이용에 동의해 주세요.';
+  return '';
+}
+
+function modal(html) {
+  document.getElementById('modalRoot').innerHTML = `<div class="modal" id="modal"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+}
+
+/* 제안서 예시 (견적은 빼고 구성·일정만) */
+function showSample() {
+  const a = { company: { name: '예시 기업' }, expo: { name: '인터배터리 2027 (가상 일정)', start: '2027-03-10', end: '2027-03-12' }, mix: {} };
+  MODULES.forEach(m => { a.mix[m.id] = defaultOpt(m); });
+  const p = buildProposal(a);
+  const groups = PHASES.map(([k, n]) => {
+    const rows = p.schedule.filter(s => phaseOf(s.date, a.expo) === k);
+    return rows.length ? `<div class="ph-t">${n}</div>${rows.map(s => `<div class="row m-${s.module}"><span class="d num">${U.md(s.date)}</span><span class="dot"></span>${U.esc(s.title)}</div>`).join('')}` : '';
+  }).join('');
+  modal(`<div class="sheet-h"><div><span class="muted">제안서 예시 · ${a.expo.name}</span><h2 style="font-size:20px; margin-top:4px">세 가지를 모두 맡기면 이렇게 짭니다</h2></div><button class="btn ghost" type="button" data-close>닫기</button></div>
+    <div style="display:flex; flex-direction:column; gap:6px">${p.sections.map(s => `<div>${tag(s.module)} <span>${U.esc(s.summary)}</span></div>`).join('')}</div>
+    <div>${groups}</div>
+    <p class="muted" style="margin:0; font-size:13px">실제 제안서에는 상담 내용에 맞춘 일정과 견적이 들어갑니다.</p>
+    <button class="next" type="button" data-close data-go="select">홍보 신청 시작하기</button>`);
+}
+
+function showInfo() {
+  modal(`<div class="sheet-h"><h2 style="font-size:20px">진행 과정</h2><button class="btn ghost" type="button" data-close>닫기</button></div>
+    <div class="flow">
+      <div class="fl you"><b>1 상담 신청</b>필요한 홍보와 전시 정보를 남깁니다.</div>
+      <div class="fl"><b>2 상담</b>담당 PM이 목표와 범위를 정합니다.</div>
+      <div class="fl"><b>3 플랜 제안서</b>전시 일정에 맞춘 일정·견적을 보냅니다.</div>
+      <div class="fl you"><b>4 컨펌</b>제안서를 보고 확정하거나 수정을 요청합니다.</div>
+      <div class="fl"><b>5 운영</b>전시 전·중·후 일정대로 진행합니다.</div>
+      <div class="fl"><b>6 결과 정리</b>기사·게시물·성과를 모아 드립니다.</div>
+    </div>
+    <h2 style="font-size:20px">자주 묻는 질문</h2>
+    <div class="faq">
+      <details><summary>전시까지 얼마 남지 않았는데 가능할까요?</summary><p>전시 4주 전부터 진행하는 것을 권합니다. 그보다 짧으면 가능한 항목만 골라 일정을 다시 짭니다.</p></details>
+      <details><summary>하나만 맡겨도 되나요?</summary><p>네. 언론만, 콘텐츠만, 인플루언서만도 신청하실 수 있습니다.</p></details>
+      <details><summary>비용은 언제 알 수 있나요?</summary><p>정보를 입력하고 'AI 솔루션 받기'를 누르면 예산에 맞춘 매체별 금액(가안)을 바로 보실 수 있습니다. 확정 견적은 상담 후 플랜 제안서로 보내 드립니다.</p></details>
+      <details><summary>보도자료나 콘텐츠는 미리 볼 수 있나요?</summary><p>배포·게시 전에 모두 확인을 받습니다.</p></details>
+    </div>`);
+}
+
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-close]') || e.target.id === 'modal') document.getElementById('modalRoot').innerHTML = '';
+  const g = e.target.closest('[data-go]');
+  if (g && !g.disabled) { go(g.dataset.go); return; }
+  if (e.target.closest('[data-sample]')) { showSample(); return; }
+  if (e.target.closest('[data-info]')) { showInfo(); return; }
+  const sit = e.target.closest('[data-sit]');
+  if (sit) {
+    const s = SITUATIONS.find(x => x.id === sit.dataset.sit);
+    if (F.situation === s.title) { F.situation = ''; } else { F.situation = s.title; F.mix = s.mix.slice(); }
+    renderSelect(); return;
+  }
+  const sv = e.target.closest('[data-svc]');
+  if (sv) {
+    const id = sv.dataset.svc;
+    F.mix = F.mix.includes(id) ? F.mix.filter(x => x !== id) : F.mix.concat(id);
+    renderSelect(); return;
+  }
+  const pk = e.target.closest('[data-pick]');
+  if (pk) { pickKind = pk.dataset.pick; document.getElementById('fileIn').click(); return; }
+  const uf = e.target.closest('[data-unfile]');
+  if (uf) { F.files.splice(+uf.dataset.unfile, 1); renderFiles(); return; }
+  if (e.target.id === 'againBtn') { F.done = null; F.mix = []; F.situation = ''; F.files = []; F.app = null; F.sol = null; renderSelect(); go('intro'); return; }
+  if (e.target.id === 'fillBtn') {
+    const set = (id, v) => { document.getElementById(id).value = v; };
+    set('c_name', '카본엣지(가상)'); set('c_ind', '배터리·소재'); set('c_person', '최유나'); set('c_phone', '010-0000-4417');
+    set('c_email', 'yn.choi@carbonedge.example'); set('c_site', 'carbonedge.example'); set('x_name', '인터배터리 2027 (가상 일정)');
+    set('x_booth', 'B-330'); set('x_start', '2027-03-10'); set('x_end', '2027-03-12'); set('budget', '2000');
+    document.getElementById('budgetCustomWrap').hidden = true;
+    set('memo', '해외 바이어에게도 알리고 싶습니다.'); document.getElementById('agree').checked = true;
+  }
+  const cs = e.target.closest('[data-consult]');
+  if (cs) submitConsult(cs.dataset.consult);
+});
+
+// 정보 입력 → AI 솔루션 초안 (AI 서버가 없거나 실패하면 예시 초안)
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'applyForm') return;
+  e.preventDefault();
+  const a = collect(), msg = check(a), err = document.getElementById('err');
+  err.textContent = msg;
+  if (msg) return;
+  F.app = a; F.aiError = '';
+  const steps = ['신청 정보 정리'].concat(API.canSolve() && F.files.length ? ['첨부 자료 읽기'] : [],
+    ['핵심 메시지 쓰기', '예산에 맞춰 매체별 금액 나누기', '전시 일정에 맞춰 일정 짜기']);
+  const ai = await runLoading(`${a.company.name} 홍보 솔루션을 만들고 있습니다`, steps, API.solve(a, F.files));
+  F.sol = buildSolution(a, ai);
+  go('solution');
+});
+
+/* 로딩 화면: 단계를 하나씩 체크하고, 마지막 단계는 실제 작업(AI)이 끝날 때까지 기다린다 */
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function runLoading(title, steps, work) {
+  document.getElementById('ldTitle').textContent = title;
+  const list = document.getElementById('ldSteps'), bar = document.getElementById('ldBar');
+  list.innerHTML = steps.map(s => `<li>${s}</li>`).join('');
+  const li = [...list.children], result = work.then(v => v, x => { F.aiError = x.message; return null; });
+  bar.style.width = '0%';
+  go('loading');
+  for (let i = 0; i < steps.length; i++) {
+    li[i].className = 'now';
+    bar.style.width = Math.round((i + 0.5) / steps.length * 100) + '%';
+    await (i === steps.length - 1 ? Promise.all([result, sleep(800)]) : sleep(900));
+    li[i].className = 'ok';
+  }
+  bar.style.width = '100%';
+  await sleep(450);
+  return result;
+}
+
+// 솔루션 화면에서 상담 종류를 골라 접수
+async function submitConsult(consult) {
+  const btns = document.querySelectorAll('[data-consult]'), err = document.getElementById('solErr');
+  btns.forEach(b => { b.disabled = true; });
+  if (F.files.length) err.textContent = '자료 올리는 중…';
+  const s = F.sol, app = Object.assign({}, F.app, { mix: s.mix, consult });
+  delete app.agree;
+  app.solution = { engine: s.engine, model: s.model, createdAt: s.createdAt, budget: s.budget, none: s.none, total: s.total, fee: s.fee, over: s.over, left: s.left,
+    message: s.message, reason: s.reason, checks: s.checks,
+    rows: s.rows.map(r => ({ module: r.module, name: r.name, cost: r.cost, share: r.share, summary: r.summary })) };
+  try { const r = await API.submit(app, F.files); F.done = { id: r.id, consult }; F.files = []; renderSolution(); window.scrollTo(0, 0); }
+  catch (x) { err.textContent = x.message; btns.forEach(b => { b.disabled = false; }); }
+}
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'budget') { document.getElementById('budgetCustomWrap').hidden = e.target.value !== 'custom'; if (e.target.value === 'custom') document.getElementById('budgetCustom').focus(); return; }
+  // 첨부: 파일 선택창
+  if (e.target.id !== 'fileIn') return;
+  addFiles(pickKind, e.target.files);
+  e.target.value = '';
+});
+// 첨부: 끌어다 놓기
+['dragenter', 'dragover'].forEach(t => document.addEventListener(t, e => {
+  const z = e.target.closest && e.target.closest('[data-drop]');
+  if (!z) return;
+  e.preventDefault(); z.classList.add('drag');
+}));
+document.addEventListener('dragleave', e => {
+  const z = e.target.closest && e.target.closest('[data-drop]');
+  if (z && !z.contains(e.relatedTarget)) z.classList.remove('drag');
+});
+document.addEventListener('drop', e => {
+  const z = e.target.closest && e.target.closest('[data-drop]');
+  if (!z) return;
+  e.preventDefault(); z.classList.remove('drag');
+  addFiles(z.dataset.drop, e.dataTransfer.files);
+});
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.getElementById('modalRoot').innerHTML = ''; });
+
+renderSelect();
+
+// 시험용: index.html#demo 로 열면 예시 값으로 마지막(AI 솔루션) 화면을 바로 띄운다
+if (location.hash === '#demo') {
+  document.querySelector('[data-go=select]').click();
+  document.querySelector('[data-sit=first]').click();
+  document.getElementById('toForm').click();
+  document.getElementById('fillBtn').click();
+  F.app = collect(); F.sol = buildSolution(F.app);
+  go('solution');
+}
+</script>
+</body>
+</html>
